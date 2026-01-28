@@ -25,3 +25,16 @@ test {
   assert_true(a.compare(b) < 0)
 }
 ```
+
+## inc
+
+```mbt check
+///|
+test {
+  inspect(inc("1.2.3", "patch"), content="Some(\"1.2.4\")")
+  inspect(
+    inc("1.2.3", "prerelease", identifier="beta"),
+    content="Some(\"1.2.4-beta.0\")",
+  )
+}
+```

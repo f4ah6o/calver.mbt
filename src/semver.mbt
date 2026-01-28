@@ -25,6 +25,39 @@ pub suberror SemVerError {
 } derive(Show, Eq)
 
 ///|
+pub fn SemVer::new(major : Int, minor : Int, patch : Int) -> SemVer {
+  SemVer::{ major, minor, patch, pre: [], build: [] }
+}
+
+///|
+pub fn SemVer::with_prerelease(
+  major : Int,
+  minor : Int,
+  patch : Int,
+  label : String,
+  number : Int,
+) -> SemVer {
+  SemVer::{
+    major,
+    minor,
+    patch,
+    pre: [PreId::Str(label), PreId::Num(number)],
+    build: [],
+  }
+}
+
+///|
+pub fn SemVer::strip_build(self : SemVer) -> SemVer {
+  SemVer::{
+    major: self.major,
+    minor: self.minor,
+    patch: self.patch,
+    pre: self.pre,
+    build: [],
+  }
+}
+
+///|
 pub fn SemVer::to_string(self : SemVer) -> String {
   let base = "\{self.major}.\{self.minor}.\{self.patch}"
   let pre = if self.pre.is_empty() {

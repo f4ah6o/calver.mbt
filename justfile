@@ -36,3 +36,10 @@ clean:
 
 # Pre-release check
 release-check: fmt info check test
+
+# Build and install native CLI to ~/.local/bin/moonver
+install:
+    moon build --target native src/cli
+    mkdir -p "${HOME}/.local/bin"
+    cp target/native/release/build/cli/cli.exe "${HOME}/.local/bin/moonver"
+    chmod +x "${HOME}/.local/bin/moonver"

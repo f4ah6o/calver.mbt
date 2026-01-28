@@ -2,6 +2,8 @@
 package "mizchi/semver"
 
 // Values
+pub fn inc(String, String, identifier? : String, identifier_base? : Int) -> String?
+
 pub fn parse(String) -> SemVer raise SemVerError
 
 pub fn try_parse(String) -> Result[SemVer, SemVerError]
@@ -33,8 +35,12 @@ pub struct SemVer {
   build : Array[String]
 }
 pub fn SemVer::compare(Self, Self) -> Int
+pub fn SemVer::inc(Self, String, identifier? : String, identifier_base? : Int) -> Self?
 pub fn SemVer::is_prerelease(Self) -> Bool
+pub fn SemVer::new(Int, Int, Int) -> Self
+pub fn SemVer::strip_build(Self) -> Self
 pub fn SemVer::to_string(Self) -> String
+pub fn SemVer::with_prerelease(Int, Int, Int, String, Int) -> Self
 pub impl Eq for SemVer
 pub impl Show for SemVer
 pub impl ToJson for SemVer

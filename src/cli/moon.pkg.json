@@ -1,0 +1,8 @@
+{
+  "is_main": true,
+  "import": [
+    "mizchi/semver",
+    "moonbitlang/core/env",
+    "moonbitlang/core/strconv"
+  ]
+}
