@@ -10,7 +10,6 @@ just fmt       # format code
 just check     # type check
 just test      # run tests
 just test-update  # update snapshot tests
-just run       # run main
 just info      # generate type definition files
 ```
 
@@ -37,11 +36,11 @@ just info      # generate type definition files
 
 ```bash
 # Show symbol definition with source code
-moon ide peek-def fib
+moon ide peek-def parse
 moon ide peek-def Type::method
 
 # List symbols in a file
-moon ide outline src/lib.mbt
+moon ide outline src/semver.mbt
 ```
 
 ### `moon doc` - Standard Library API Discovery

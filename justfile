@@ -22,9 +22,9 @@ test:
 test-update:
     moon test --update --target {{target}}
 
-# Run main
-run:
-    moon run src/main --target {{target}}
+# Generate semver oracle tests (requires npm install)
+oracle:
+    node scripts/gen_oracle.mjs
 
 # Generate type definition files
 info:

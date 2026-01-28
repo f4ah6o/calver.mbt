@@ -1,24 +1,27 @@
 # API Documentation
 
-This file contains executable doc tests using `mbt test` blocks.
+Executable doc tests for SemVer parsing and comparison.
 
-## fib
+## parse
 
-Calculate the n-th Fibonacci number.
-
-```mbt test
-inspect(fib(0), content="1")
-inspect(fib(1), content="1")
-inspect(fib(10), content="89")
+```mbt check
+///|
+test {
+  inspect(parse("1.2.3").to_string(), content="1.2.3")
+  inspect(
+    parse("1.2.3-alpha.1+build.5").to_string(),
+    content="1.2.3-alpha.1+build.5",
+  )
+}
 ```
 
-## sum
+## compare
 
-Sum elements in an array with optional start index and length.
-
-```mbt test
-let data = [1, 2, 3, 4, 5]
-inspect(sum(data~), content="15")
-inspect(sum(data~, start=2), content="12")
-inspect(sum(data~, length=3), content="6")
+```mbt check
+///|
+test {
+  let a = parse("1.0.0-rc.1")
+  let b = parse("1.0.0")
+  assert_true(a.compare(b) < 0)
+}
 ```

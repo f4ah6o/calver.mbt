@@ -1,0 +1,45 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/semver"
+
+// Values
+pub fn parse(String) -> SemVer raise SemVerError
+
+pub fn try_parse(String) -> Result[SemVer, SemVerError]
+
+// Errors
+pub suberror SemVerError {
+  InvalidFormat(String)
+  InvalidNumber(String)
+  LeadingZero(String)
+  InvalidIdentifier(String)
+}
+pub impl Eq for SemVerError
+pub impl Show for SemVerError
+
+// Types and methods
+pub enum PreId {
+  Num(Int)
+  Str(String)
+}
+pub impl Eq for PreId
+pub impl Show for PreId
+pub impl ToJson for PreId
+
+pub struct SemVer {
+  major : Int
+  minor : Int
+  patch : Int
+  pre : Array[PreId]
+  build : Array[String]
+}
+pub fn SemVer::compare(Self, Self) -> Int
+pub fn SemVer::is_prerelease(Self) -> Bool
+pub fn SemVer::to_string(Self) -> String
+pub impl Eq for SemVer
+pub impl Show for SemVer
+pub impl ToJson for SemVer
+
+// Type aliases
+
+// Traits
+

@@ -1,0 +1,11 @@
+{
+  "name": "mizchi-semver-oracle",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "oracle": "node scripts/gen_oracle.mjs"
+  },
+  "devDependencies": {
+    "semver": "^7.6.0"
+  }
+}
