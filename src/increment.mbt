@@ -1,28 +1,16 @@
 ///|
 priv enum ReleaseType {
-  Major
-  Minor
-  Patch
-  Premajor
-  Preminor
-  Prepatch
+  Pre
   Prerelease
   Release
-  Pre
 }
 
 ///|
 fn parse_release_type(release : String) -> ReleaseType? {
   match release {
-    "major" => Some(ReleaseType::Major)
-    "minor" => Some(ReleaseType::Minor)
-    "patch" => Some(ReleaseType::Patch)
-    "premajor" => Some(ReleaseType::Premajor)
-    "preminor" => Some(ReleaseType::Preminor)
-    "prepatch" => Some(ReleaseType::Prepatch)
+    "pre" => Some(ReleaseType::Pre)
     "prerelease" => Some(ReleaseType::Prerelease)
     "release" => Some(ReleaseType::Release)
-    "pre" => Some(ReleaseType::Pre)
     _ => None
   }
 }
@@ -41,7 +29,7 @@ fn parse_identifier_opt(identifier : String?) -> PreId? {
   match identifier {
     None => None
     Some(value) => {
-      let result : Result[PreId, SemVerError] = try? parse_prerelease_ident(
+      let result : Result[PreId, CalverError] = try? parse_prerelease_ident(
         value,
       )
       match result {
@@ -94,75 +82,44 @@ fn inc_pre_ids(
 }
 
 ///|
-fn inc_semver(
-  version : SemVer,
+fn inc_calver(
+  version : Calver,
   release : ReleaseType,
   identifier : PreId?,
   identifier_base : Int,
-) -> SemVer {
+) -> Calver {
   let base = normalize_identifier_base(identifier_base)
-  let mut major = version.major
-  let mut minor = version.minor
-  let mut patch = version.patch
   let mut pre : Array[PreId] = []
   match release {
-    ReleaseType::Major => {
-      if version.minor != 0 || version.patch != 0 || version.pre.is_empty() {
-        major = major + 1
-      }
-      minor = 0
-      patch = 0
-      pre = []
-    }
-    ReleaseType::Minor => {
-      if version.patch != 0 || version.pre.is_empty() {
-        minor = minor + 1
-      }
-      patch = 0
-      pre = []
-    }
-    ReleaseType::Patch => {
-      if version.pre.is_empty() {
-        patch = patch + 1
-      }
-      pre = []
-    }
-    ReleaseType::Premajor => {
-      major = major + 1
-      minor = 0
-      patch = 0
-      pre = inc_pre_ids([], identifier, base)
-    }
-    ReleaseType::Preminor => {
-      minor = minor + 1
-      patch = 0
-      pre = inc_pre_ids([], identifier, base)
-    }
-    ReleaseType::Prepatch => {
-      patch = patch + 1
-      pre = inc_pre_ids([], identifier, base)
-    }
+    ReleaseType::Release => pre = []
+    ReleaseType::Pre => pre = inc_pre_ids(version.pre, identifier, base)
     ReleaseType::Prerelease =>
       if version.pre.is_empty() {
-        patch = patch + 1
         pre = inc_pre_ids([], identifier, base)
       } else {
         pre = inc_pre_ids(version.pre, identifier, base)
       }
-    ReleaseType::Release => pre = []
-    ReleaseType::Pre => pre = inc_pre_ids(version.pre, identifier, base)
   }
-  SemVer::{ major, minor, patch, pre, build: [] }
+  Calver::{
+    scheme: version.scheme,
+    year: version.year,
+    month: version.month,
+    week: version.week,
+    day: version.day,
+    micro: version.micro,
+    pre,
+    build: [],
+  }
 }
 
 ///|
-pub fn SemVer::inc(
-  self : SemVer,
+pub fn Calver::inc(
+  self : Calver,
   release : String,
   identifier? : String,
   identifier_base? : Int = 0,
-) -> SemVer? {
-  inc_semver_option(self, release, identifier, identifier_base)
+) -> Calver? {
+  inc_calver_option(self, release, identifier, identifier_base)
 }
 
 ///|
@@ -174,7 +131,7 @@ pub fn inc(
 ) -> String? {
   match try_parse(version) {
     Ok(value) =>
-      match inc_semver_option(value, release, identifier, identifier_base) {
+      match inc_calver_option(value, release, identifier, identifier_base) {
         Some(next) => Some(next.to_string())
         None => None
       }
@@ -183,24 +140,24 @@ pub fn inc(
 }
 
 ///|
-fn inc_semver_option(
-  version : SemVer,
+fn inc_calver_option(
+  version : Calver,
   release : String,
   identifier : String?,
   identifier_base : Int,
-) -> SemVer? {
+) -> Calver? {
   match parse_release_type(release) {
     None => None
     Some(release_type) =>
       match parse_identifier_opt(identifier) {
         None =>
           if identifier is None {
-            Some(inc_semver(version, release_type, None, identifier_base))
+            Some(inc_calver(version, release_type, None, identifier_base))
           } else {
             None
           }
         Some(id) =>
-          Some(inc_semver(version, release_type, Some(id), identifier_base))
+          Some(inc_calver(version, release_type, Some(id), identifier_base))
       }
   }
 }

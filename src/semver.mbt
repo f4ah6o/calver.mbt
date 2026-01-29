@@ -1,65 +1,111 @@
 ///|
-/// Semantic Versioning (SemVer 2.0.0).
-pub struct SemVer {
-  major : Int
-  minor : Int
-  patch : Int
+/// Calendar Versioning (CalVer) value.
+pub(all) struct Calver {
+  scheme : String
+  year : Int
+  month : Int?
+  week : Int?
+  day : Int?
+  micro : Int?
   pre : Array[PreId]
   build : Array[String]
 } derive(Show, Eq, ToJson)
 
 ///|
 /// Pre-release identifier.
-pub enum PreId {
+pub(all) enum PreId {
   Num(Int)
   Str(String)
 } derive(Show, Eq, ToJson)
 
 ///|
-/// Errors raised while parsing a SemVer string.
-pub suberror SemVerError {
+pub let default_scheme : String = "YYYY.MM.MICRO"
+
+///|
+pub fn Calver::scheme(self : Calver) -> String {
+  self.scheme
+}
+
+///|
+pub fn Calver::with_scheme(
+  scheme : String,
+  year : Int,
+  month? : Int,
+  week? : Int,
+  day? : Int,
+  micro? : Int,
+) -> Calver {
+  { scheme, year, month, week, day, micro, pre: [], build: [] }
+}
+
+///|
+/// Errors raised while parsing a Calver string.
+pub suberror CalverError {
   InvalidFormat(String)
   InvalidNumber(String)
   LeadingZero(String)
   InvalidIdentifier(String)
+  InvalidScheme(String)
 } derive(Show, Eq)
 
 ///|
-pub fn SemVer::new(major : Int, minor : Int, patch : Int) -> SemVer {
-  SemVer::{ major, minor, patch, pre: [], build: [] }
+pub fn Calver::new(year : Int, month : Int, micro : Int) -> Calver {
+  Calver::{
+    scheme: default_scheme,
+    year,
+    month: Some(month),
+    week: None,
+    day: None,
+    micro: Some(micro),
+    pre: [],
+    build: [],
+  }
 }
 
 ///|
-pub fn SemVer::with_prerelease(
-  major : Int,
-  minor : Int,
-  patch : Int,
+pub fn Calver::with_prerelease(
+  year : Int,
+  month : Int,
+  micro : Int,
   label : String,
   number : Int,
-) -> SemVer {
-  SemVer::{
-    major,
-    minor,
-    patch,
+) -> Calver {
+  Calver::{
+    scheme: default_scheme,
+    year,
+    month: Some(month),
+    week: None,
+    day: None,
+    micro: Some(micro),
     pre: [PreId::Str(label), PreId::Num(number)],
     build: [],
   }
 }
 
 ///|
-pub fn SemVer::strip_build(self : SemVer) -> SemVer {
-  SemVer::{
-    major: self.major,
-    minor: self.minor,
-    patch: self.patch,
+pub fn Calver::strip_build(self : Calver) -> Calver {
+  Calver::{
+    scheme: self.scheme,
+    year: self.year,
+    month: self.month,
+    week: self.week,
+    day: self.day,
+    micro: self.micro,
     pre: self.pre,
     build: [],
   }
 }
 
 ///|
-pub fn SemVer::to_string(self : SemVer) -> String {
-  let base = "\{self.major}.\{self.minor}.\{self.patch}"
+pub fn Calver::to_string(self : Calver) -> String {
+  let base = try! format_core_with_scheme(
+    self.scheme,
+    self.year,
+    self.month,
+    self.week,
+    self.day,
+    self.micro,
+  )
   let pre = if self.pre.is_empty() {
     ""
   } else {
@@ -74,28 +120,21 @@ pub fn SemVer::to_string(self : SemVer) -> String {
 }
 
 ///|
-pub fn SemVer::is_prerelease(self : SemVer) -> Bool {
+pub fn Calver::is_prerelease(self : Calver) -> Bool {
   !self.pre.is_empty()
 }
 
 ///|
-/// Compare versions by SemVer precedence rules (build metadata ignored).
-pub fn SemVer::compare(self : SemVer, other : SemVer) -> Int {
-  let major_cmp = compare_int(self.major, other.major)
-  if major_cmp != 0 {
-    major_cmp
+/// Compare versions by Calver precedence rules (build metadata ignored).
+pub fn Calver::compare(self : Calver, other : Calver) -> Int {
+  if self.scheme != other.scheme {
+    return compare_string(self.scheme, other.scheme)
+  }
+  let core_cmp = compare_core_with_scheme(self.scheme, self, other)
+  if core_cmp != 0 {
+    core_cmp
   } else {
-    let minor_cmp = compare_int(self.minor, other.minor)
-    if minor_cmp != 0 {
-      minor_cmp
-    } else {
-      let patch_cmp = compare_int(self.patch, other.patch)
-      if patch_cmp != 0 {
-        patch_cmp
-      } else {
-        compare_prerelease(self.pre, other.pre)
-      }
-    }
+    compare_prerelease(self.pre, other.pre)
   }
 }
 

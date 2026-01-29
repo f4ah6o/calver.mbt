@@ -5,15 +5,17 @@ let usage_text : String =
   #|Commands:
   #|  init [--release <version>] [--alpha <n>] [--beta <n>] [--rc <n>] [--force]
   #|  get <alpha|beta|rc|release> <version>
-  #|  up <alpha|beta|rc|release|minor|major> <version>
+  #|  up <alpha|beta|rc|release|pre|prerelease> <version>
+  #|  scheme <pattern> <version>
   #|
   #|Examples:
-  #|  moonver get alpha 1.2.3
-  #|  moonver up rc 1.2.3-rc.1
-  #|  moonver up release 1.2.3-rc.1
+  #|  moonver get alpha 2026.01.1
+  #|  moonver up rc 2026.01.1-rc.1
+  #|  moonver up release 2026.01.1-rc.1
+  #|  moonver scheme YYYY.MM.MICRO 2026.01.1
   #|
   #|Notes:
-  #|  - version may be prefixed with "v" (e.g. v1.2.3)
+  #|  - version may be prefixed with "v" (e.g. v2026.01.1)
 
 ///|
 fn print_usage() -> Unit {
@@ -30,86 +32,92 @@ fn strip_v(version : String) -> String {
 }
 
 ///|
-fn parse_version(value : String) -> @semver.SemVer? {
+fn parse_version(value : String) -> @calver.Calver? {
+  parse_version_with_scheme(value, @calver.default_scheme)
+}
+
+///|
+fn parse_version_with_scheme(
+  value : String,
+  scheme : String,
+) -> @calver.Calver? {
   let normalized = strip_v(value)
-  match @semver.try_parse(normalized) {
+  match @calver.try_parse_with_scheme(normalized, scheme) {
     Ok(version) => Some(version)
     Err(_) => None
   }
 }
 
 ///|
-fn release_version(version : @semver.SemVer) -> @semver.SemVer {
-  @semver.SemVer::new(version.major, version.minor, version.patch)
+fn release_version(version : @calver.Calver) -> @calver.Calver {
+  {
+    scheme: version.scheme,
+    year: version.year,
+    month: version.month,
+    week: version.week,
+    day: version.day,
+    micro: version.micro,
+    pre: [],
+    build: [],
+  }
 }
 
 ///|
-fn keep_prerelease(version : @semver.SemVer) -> @semver.SemVer {
+fn keep_prerelease(version : @calver.Calver) -> @calver.Calver {
   version.strip_build()
 }
 
 ///|
 fn with_prerelease(
-  version : @semver.SemVer,
+  version : @calver.Calver,
   label : String,
   number : Int,
-) -> @semver.SemVer {
-  @semver.SemVer::with_prerelease(
-    version.major,
-    version.minor,
-    version.patch,
-    label,
-    number,
-  )
+) -> @calver.Calver {
+  {
+    scheme: version.scheme,
+    year: version.year,
+    month: version.month,
+    week: version.week,
+    day: version.day,
+    micro: version.micro,
+    pre: [@calver.PreId::Str(label), @calver.PreId::Num(number)],
+    build: [],
+  }
 }
 
 ///|
 fn get_prerelease(
-  version : @semver.SemVer,
+  version : @calver.Calver,
   label : String,
   base : Int,
-) -> @semver.SemVer {
+) -> @calver.Calver {
   match version.pre {
-    [@semver.PreId::Str(name), @semver.PreId::Num(_), ..] if name == label =>
+    [@calver.PreId::Str(name), @calver.PreId::Num(_), ..] if name == label =>
       keep_prerelease(version)
-    [@semver.PreId::Str(name), ..] if name == label =>
+    [@calver.PreId::Str(name), ..] if name == label =>
       with_prerelease(version, label, base)
     _ => with_prerelease(version, label, base)
   }
 }
 
 ///|
-fn up_prerelease(version : @semver.SemVer, label : String) -> @semver.SemVer {
+fn up_prerelease(version : @calver.Calver, label : String) -> @calver.Calver {
   match version.pre {
-    [@semver.PreId::Str(name), @semver.PreId::Num(num), ..] if name == label =>
+    [@calver.PreId::Str(name), @calver.PreId::Num(num), ..] if name == label =>
       with_prerelease(version, label, num + 1)
-    [@semver.PreId::Str(name), ..] if name == label =>
+    [@calver.PreId::Str(name), ..] if name == label =>
       with_prerelease(version, label, 1)
     _ => with_prerelease(release_version(version), label, 1)
   }
 }
 
 ///|
-fn up_release(version : @semver.SemVer) -> @semver.SemVer {
-  if version.pre.is_empty() {
-    @semver.SemVer::new(version.major, version.minor, version.patch + 1)
-  } else {
-    release_version(version)
-  }
+fn up_release(version : @calver.Calver) -> @calver.Calver {
+  release_version(version)
 }
 
 ///|
-fn up_minor(version : @semver.SemVer) -> @semver.SemVer {
-  @semver.SemVer::new(version.major, version.minor + 1, 0)
-}
-
-///|
-fn up_major(version : @semver.SemVer) -> @semver.SemVer {
-  @semver.SemVer::new(version.major + 1, 0, 0)
-}
-
-///|
-fn get_version(kind : String, version : @semver.SemVer) -> @semver.SemVer? {
+fn get_version(kind : String, version : @calver.Calver) -> @calver.Calver? {
   match kind {
     "alpha" => Some(get_prerelease(version, "alpha", 0))
     "beta" => Some(get_prerelease(version, "beta", 0))
@@ -120,20 +128,20 @@ fn get_version(kind : String, version : @semver.SemVer) -> @semver.SemVer? {
 }
 
 ///|
-fn up_version(kind : String, version : @semver.SemVer) -> @semver.SemVer? {
+fn up_version(kind : String, version : @calver.Calver) -> @calver.Calver? {
   match kind {
     "alpha" => Some(up_prerelease(version, "alpha"))
     "beta" => Some(up_prerelease(version, "beta"))
     "rc" => Some(up_prerelease(version, "rc"))
     "release" => Some(up_release(version))
-    "minor" => Some(up_minor(version))
-    "major" => Some(up_major(version))
+    "pre" => version.inc("pre")
+    "prerelease" => version.inc("prerelease")
     _ => None
   }
 }
 
 ///|
-fn to_output(version : @semver.SemVer) -> String {
+fn to_output(version : @calver.Calver) -> String {
   "v" + version.to_string()
 }
 
@@ -256,6 +264,17 @@ fn handle_up(kind : String, version_raw : String) -> Unit {
 }
 
 ///|
+fn handle_scheme(pattern : String, version_raw : String) -> Unit {
+  match parse_version_with_scheme(version_raw, pattern) {
+    None => {
+      println("invalid version: \{version_raw}")
+      print_usage()
+    }
+    Some(version) => println(to_output(version))
+  }
+}
+
+///|
 fn main {
   let args = @env.args()
   match args {
@@ -265,6 +284,7 @@ fn main {
     [_, "init", .. rest] => handle_init(rest)
     [_, "get", kind, version, ..] => handle_get(kind, version)
     [_, "up", kind, version, ..] => handle_up(kind, version)
+    [_, "scheme", pattern, version, ..] => handle_scheme(pattern, version)
     _ => print_usage()
   }
 }

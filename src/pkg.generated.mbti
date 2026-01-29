@@ -1,49 +1,61 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "mizchi/semver"
+package "f4ah6o/calver"
 
 // Values
+pub let default_scheme : String
+
 pub fn inc(String, String, identifier? : String, identifier_base? : Int) -> String?
 
-pub fn parse(String) -> SemVer raise SemVerError
+pub fn parse(String) -> Calver raise CalverError
 
-pub fn try_parse(String) -> Result[SemVer, SemVerError]
+pub fn parse_with_scheme(String, String) -> Calver raise CalverError
+
+pub fn try_parse(String) -> Result[Calver, CalverError]
+
+pub fn try_parse_with_scheme(String, String) -> Result[Calver, CalverError]
 
 // Errors
-pub suberror SemVerError {
+pub suberror CalverError {
   InvalidFormat(String)
   InvalidNumber(String)
   LeadingZero(String)
   InvalidIdentifier(String)
+  InvalidScheme(String)
 }
-pub impl Eq for SemVerError
-pub impl Show for SemVerError
+pub impl Eq for CalverError
+pub impl Show for CalverError
 
 // Types and methods
-pub enum PreId {
+pub(all) struct Calver {
+  scheme : String
+  year : Int
+  month : Int?
+  week : Int?
+  day : Int?
+  micro : Int?
+  pre : Array[PreId]
+  build : Array[String]
+}
+pub fn Calver::compare(Self, Self) -> Int
+pub fn Calver::inc(Self, String, identifier? : String, identifier_base? : Int) -> Self?
+pub fn Calver::is_prerelease(Self) -> Bool
+pub fn Calver::new(Int, Int, Int) -> Self
+pub fn Calver::scheme(Self) -> String
+pub fn Calver::strip_build(Self) -> Self
+pub fn Calver::to_string(Self) -> String
+pub fn Calver::with_prerelease(Int, Int, Int, String, Int) -> Self
+pub fn Calver::with_scheme(String, Int, month? : Int, week? : Int, day? : Int, micro? : Int) -> Self
+pub impl Eq for Calver
+pub impl Show for Calver
+pub impl ToJson for Calver
+
+pub(all) enum PreId {
   Num(Int)
   Str(String)
 }
 pub impl Eq for PreId
 pub impl Show for PreId
 pub impl ToJson for PreId
-
-pub struct SemVer {
-  major : Int
-  minor : Int
-  patch : Int
-  pre : Array[PreId]
-  build : Array[String]
-}
-pub fn SemVer::compare(Self, Self) -> Int
-pub fn SemVer::inc(Self, String, identifier? : String, identifier_base? : Int) -> Self?
-pub fn SemVer::is_prerelease(Self) -> Bool
-pub fn SemVer::new(Int, Int, Int) -> Self
-pub fn SemVer::strip_build(Self) -> Self
-pub fn SemVer::to_string(Self) -> String
-pub fn SemVer::with_prerelease(Int, Int, Int, String, Int) -> Self
-pub impl Eq for SemVer
-pub impl Show for SemVer
-pub impl ToJson for SemVer
 
 // Type aliases
 
