@@ -40,7 +40,7 @@ moon ide peek-def parse
 moon ide peek-def Type::method
 
 # List symbols in a file
-moon ide outline src/semver.mbt
+moon ide outline src/calver.mbt
 ```
 
 ### `moon doc` - Standard Library API Discovery

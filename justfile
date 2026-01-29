@@ -22,7 +22,7 @@ test:
 test-update:
     moon test --update --target {{target}}
 
-# Generate semver oracle tests (requires npm install)
+# Generate calver oracle tests (requires npm install)
 oracle:
     node scripts/gen_oracle.mjs
 

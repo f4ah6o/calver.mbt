@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import semver from "semver";
+import calver from "calver";
 
 const root = process.cwd();
 const outFile = path.join(root, "src", "oracle_test.mbt");
@@ -46,13 +46,13 @@ const invalid = [
   "1.0.0+build!",
 ];
 
-const strictValid = valid.filter((v) => semver.valid(v, { loose: false }) === v);
-const strictInvalid = invalid.filter((v) => semver.valid(v, { loose: false }) === null);
+const strictValid = valid.filter((v) => calver.valid(v, { loose: false }) === v);
+const strictInvalid = invalid.filter((v) => calver.valid(v, { loose: false }) === null);
 
 const pairs = [];
 for (const a of strictValid) {
   for (const b of strictValid) {
-    const cmp = semver.compare(a, b, { loose: false });
+    const cmp = calver.compare(a, b, { loose: false });
     pairs.push([a, b, cmp]);
   }
 }
@@ -87,7 +87,7 @@ function emit() {
   }
   lines.push("  ]");
   lines.push("  for s in cases {");
-  lines.push("    let result : Result[SemVer, SemVerError] = try? parse(s)");
+  lines.push("    let result : Result[calver, calverError] = try? parse(s)");
   lines.push("    assert_true(result is Err(_))");
   lines.push("  }");
   lines.push("}");
