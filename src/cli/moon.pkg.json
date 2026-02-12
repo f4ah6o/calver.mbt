@@ -1,8 +1,0 @@
-{
-  "is_main": true,
-  "import": [
-    "f4ah6o/calver",
-    "moonbitlang/core/env",
-    "moonbitlang/core/strconv"
-  ]
-}

@@ -127,7 +127,7 @@ fn parse_scheme(pattern : String) -> Scheme raise CalverError {
             if is_alnum(ch) {
               raise CalverError::InvalidScheme("unexpected token: \{pattern}")
             } else {
-              literal..write_char(ch)
+              literal.write_char(ch)
               idx = idx + 1
             }
         }
@@ -290,7 +290,7 @@ fn read_variable_digits(value : String, start : Int) -> (String, Int) {
   while idx < len {
     match value.get_char(idx) {
       Some(ch) if is_digit(ch) => {
-        sb..write_char(ch)
+        sb.write_char(ch)
         idx = idx + 1
       }
       _ => break
@@ -475,10 +475,10 @@ fn format_core_with_scheme(
   let sb = StringBuilder::new()
   for part in parsed.parts {
     match part {
-      SchemePart::Literal(text) => sb..write_string(text)
+      SchemePart::Literal(text) => sb.write_string(text)
       SchemePart::Token(token) => {
         let text = format_token_value(token, year, month, week, day, micro)
-        sb..write_string(text)
+        sb.write_string(text)
       }
     }
   }
