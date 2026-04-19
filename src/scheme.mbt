@@ -69,7 +69,7 @@ fn slice_equals(value : String, start : Int, target : String) -> Bool {
   if end > value.length() {
     false
   } else {
-    let slice = value[start:end] catch { _ => "" }
+    let slice = value[start:end]
     slice.to_string() == target
   }
 }
@@ -272,7 +272,7 @@ fn read_fixed_digits(value : String, start : Int, count : Int) -> String? {
   if end > value.length() {
     None
   } else {
-    let slice = value[start:end] catch { _ => "" }
+    let slice = value[start:end]
     let text = slice.to_string()
     if text.length() != count {
       None
@@ -323,7 +323,7 @@ fn reject_leading_zero(
 
 ///|
 fn parse_number(text : String, label~ : String) -> Int raise CalverError {
-  @strconv.parse_int(text, base=10) catch {
+  @string.parse_int(text, base=10) catch {
     _ => raise CalverError::InvalidNumber(label)
   }
 }

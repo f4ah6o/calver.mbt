@@ -147,7 +147,7 @@ fn to_output(version : @calver.Calver) -> String {
 
 ///|
 fn parse_non_neg_int(value : String) -> Int? {
-  let result : Result[Int, Error] = try? @strconv.parse_int(value, base=10)
+  let result : Result[Int, Error] = try? @string.parse_int(value, base=10)
   match result {
     Ok(num) if num >= 0 => Some(num)
     _ => None

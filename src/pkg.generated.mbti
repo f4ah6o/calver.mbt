@@ -21,9 +21,7 @@ pub suberror CalverError {
   LeadingZero(String)
   InvalidIdentifier(String)
   InvalidScheme(String)
-}
-pub impl Eq for CalverError
-pub impl Show for CalverError
+} derive(Eq, Show)
 
 // Types and methods
 pub(all) struct Calver {
@@ -35,7 +33,7 @@ pub(all) struct Calver {
   micro : Int?
   pre : Array[PreId]
   build : Array[String]
-}
+} derive(Eq, Show, ToJson)
 pub fn Calver::compare(Self, Self) -> Int
 pub fn Calver::inc(Self, String, identifier? : String, identifier_base? : Int) -> Self?
 pub fn Calver::is_prerelease(Self) -> Bool
@@ -45,17 +43,11 @@ pub fn Calver::strip_build(Self) -> Self
 pub fn Calver::to_string(Self) -> String
 pub fn Calver::with_prerelease(Int, Int, Int, String, Int) -> Self
 pub fn Calver::with_scheme(String, Int, month? : Int, week? : Int, day? : Int, micro? : Int) -> Self
-pub impl Eq for Calver
-pub impl Show for Calver
-pub impl ToJson for Calver
 
 pub(all) enum PreId {
   Num(Int)
   Str(String)
-}
-pub impl Eq for PreId
-pub impl Show for PreId
-pub impl ToJson for PreId
+} derive(Eq, Show, ToJson)
 
 // Type aliases
 

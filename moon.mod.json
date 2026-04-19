@@ -10,5 +10,6 @@
     "calver",
     "versioning"
   ],
-  "description": "Calendar Versioning parser and comparator for MoonBit."
+  "description": "Calendar Versioning parser and comparator for MoonBit.",
+  "warn-list": "-27"
 }

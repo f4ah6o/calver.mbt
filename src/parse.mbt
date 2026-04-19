@@ -103,7 +103,7 @@ fn parse_build_ident(value : String) -> String raise CalverError {
 
 ///|
 fn parse_int(value : String, label~ : String) -> Int raise CalverError {
-  @strconv.parse_int(value, base=10) catch {
+  @string.parse_int(value, base=10) catch {
     _ => raise CalverError::InvalidNumber(label)
   }
 }
@@ -131,19 +131,12 @@ fn split_to_strings(value : String, sep : String) -> Array[String] {
 }
 
 ///|
-fn split_once(
-  value : String,
-  sep : String,
-) -> (String, String?) raise CalverError {
+fn split_once(value : String, sep : String) -> (String, String?) {
   match value.find(sep) {
     None => (value, None)
     Some(idx) => {
-      let left = value[:idx] catch {
-          _ => raise CalverError::InvalidFormat("invalid delimiter boundary")
-        }
-      let right = value[idx + sep.length():] catch {
-          _ => raise CalverError::InvalidFormat("invalid delimiter boundary")
-        }
+      let left = value[:idx]
+      let right = value[idx + sep.length():]
       (left.to_string(), Some(right.to_string()))
     }
   }
